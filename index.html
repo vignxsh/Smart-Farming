@@ -5,84 +5,265 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Farm Control Panel</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .dashboard { background: white; padding: 20px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2, h3 { text-align: center; color: #333; }
-        .section { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; }
-        input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
-        button { width: 100%; padding: 10px; margin-bottom: 5px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-save { background: #27ae60; color: white; }
-        .btn-auto { background: #8e44ad; color: white; }
-        .btn-on { background: #e74c3c; color: white; width: 48%; }
-        .btn-off { background: #7f8c8d; color: white; width: 48%; }
-        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
-        #status { text-align: center; font-weight: bold; margin-top: 10px; }
-        .live-data span { font-weight: bold; color: #2980b9; font-size: 1.1em; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+            /* Fixed Background Image CSS */
+            background-color: #e0f7fa; /* Fallback color */
+            background-image: url('123.jpeg'); 
+            background-repeat: no-repeat;
+            background-position: center center;
+            background-attachment: fixed;
+            background-size: cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 40px;
+        }
+
+        /* Sarcastic Header Styles */
+        .sarcastic-header {
+            max-width: 750px;
+            background: rgba(255, 255, 255, 0.15); /* ~85% transparent */
+            backdrop-filter: blur(10px);
+            padding: 25px 35px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.2);
+            margin-bottom: 30px;
+            text-align: center;
+            font-style: italic;
+            color: #000000;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            margin-top: 20px;
+        }
+        .sarcastic-header h2 { 
+            margin-top: 0; 
+            color: #ffffff; /* White title */
+            font-style: normal; 
+            font-size: 1.8em; 
+            margin-bottom: 15px; 
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Dark shadow to pop */
+        }
+        .sarcastic-header p { 
+            line-height: 1.6; 
+            margin-bottom: 10px; 
+            font-size: 1.15em;
+            color: red; /* Red text */
+            font-weight: 600; 
+            text-shadow: 2px 2px 3px black; /* Black shadow */
+        }
+
+        /* Top Right Logo & Text */
+        .logo-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-container img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+        }
+        .logo-container p {
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 8px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+        }
+
+        /* Dashboard Container Styles */
+        .dashboard { 
+            background: rgba(255, 255, 255, 0.35); /* ~65% transparent */
+            padding: 25px; 
+            border-radius: 12px; 
+            width: 100%; 
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+            margin-bottom: 40px;
+            backdrop-filter: blur(8px);
+        }
+        h2, h3 { text-align: center; color: #ffffff; margin-top: 0; text-shadow: 1px 1px 4px rgba(0,0,0,0.8);}
+        .section { margin-bottom: 20px; padding: 20px; background: rgba(248, 249, 250, 0.5); border-radius: 10px; border: 1px solid rgba(233, 236, 239, 0.5); }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; box-sizing: border-box; border: 1px solid rgba(206, 212, 218, 0.8); border-radius: 6px; font-size: 14px; background: rgba(255, 255, 255, 0.8);}
+        button { width: 100%; padding: 12px; margin-bottom: 10px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s ease; font-size: 14px;}
+        button:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        button:active { transform: scale(0.98); box-shadow: none; }
+        .btn-save { background: #28a745; color: white; } .btn-save:hover { background: #218838; }
+        .btn-on { background: #dc3545; color: white; width: 48%; } .btn-on:hover { background: #c82333; }
+        .btn-off { background: #6c757d; color: white; width: 48%; } .btn-off:hover { background: #5a6268; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 15px; align-items: center;}
+        #status { text-align: center; font-weight: bold; margin-top: 15px; min-height: 20px;}
+        .live-data span { font-weight: bold; color: #004d99; font-size: 1.2em; text-shadow: 1px 1px 2px rgba(255,255,255,0.7); }
+
+        /* Custom Toggle Switch */
+        .toggle-wrapper {
+            background: #343a40;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .toggle-label {
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #495057;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: #ffffff;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input:checked + .slider { background-color: #007bff; }
+        input:checked + .slider:before { transform: translateX(26px); }
+
+        /* AI Assistant Styles */
+        .ai-section { background: rgba(231, 241, 255, 0.8); border-color: #b3d7ff; }
+        .btn-ai { background: #007bff; color: white; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 15px; }
+        .btn-ai:hover { background: #0056b3; }
+        .ai-output { margin-top: 15px; padding: 15px; background: white; border-radius: 10px; font-size: 0.95em; color: #333; min-height: 50px; display: none; line-height: 1.5; border: 1px solid #cce5ff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);}
+        .spinner { border: 3px solid rgba(0,123,255,0.2); width: 20px; height: 20px; border-radius: 50%; border-left-color: #007bff; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
+
+<!-- Top Right Logo -->
+<div class="logo-container">
+    <img src="IMG_20260517_070138485_HDR~2.jpg" alt="Flower Logo">
+    <p>flower is under control</p>
+</div>
+
+<!-- Sarcastic Header -->
+<div class="sarcastic-header">
+    <h2>"Smart" Farm Project...</h2>
+    <p>Because manually watering plants is <em>so</em> 20th century. We've successfully over-engineered a solution to a problem that didn't really exist, using enough cloud computing power to launch a small satellite, all to keep a few potted plants from getting thirsty.</p>
+    <p>Behold, the pinnacle of agricultural technology: a button that presses itself... sometimes. It's not laziness, it's "automation." The plants are thrilled, we assume. They haven't lodged any formal complaints yet.</p>
+</div>
 
 <div class="dashboard">
     <h2>🌾 Farm Control Panel</h2>
 
     <div class="section live-data">
         <h3>📡 Current Readings</h3>
-        <div class="row"><span>Temperature:</span> <span id="valTemp">--</span></div>
-        <div class="row"><span>Humidity:</span> <span id="valHum">--</span></div>
-        <div class="row"><span>Soil Moisture:</span> <span id="valSoil">--</span></div>
-    </div>
+                <div class="row"><span style="color: #333;">Temperature:</span> <span id="valTemp">--</span></div>
+                <div class="row"><span style="color: #333;">Humidity:</span> <span id="valHum">--</span></div>
+                <div class="row"><span style="color: #333;">Soil Moisture:</span> <span id="valSoil">--</span></div>
+            </div>
 
-    <div class="section">
-        <h3>1. Auto Mode Thresholds</h3>
-        <label>Max Temperature (°C)</label>
-        <input type="number" id="maxTemp" placeholder="e.g. 38 (Turns ON above)">
-        <label>Min Humidity (%)</label>
-        <input type="number" id="maxHum" placeholder="e.g. 40 (Turns ON below)">
-        <label>Min Soil Moisture (%)</label>
-        <input type="number" id="minSoil" placeholder="e.g. 45 (Turns ON below)">
-        <button class="btn-save" onclick="updateThresholds()">Save Rules to Cloud</button>
-    </div>
+            <!-- AI ASSISTANT SECTION -->
+            <div class="section ai-section">
+                <h3>✨ AI Farm Assistant</h3>
+                <button class="btn-ai" onclick="getAIAdvice()">✨ Get Expert Insights</button>
+                <div id="aiOutput" class="ai-output"></div>
+            </div>
 
-    <div class="section">
-        <h3>2. Mode & Manual Control</h3>
-        <button class="btn-auto" onclick="sendCommand('MODE_AUTO')">🔄 Enable AUTO Mode</button>
-        <p style="text-align:center; font-size:12px;">(Clicking any ON/OFF button below switches to MANUAL mode)</p>
-        
-        <label>Temperature Relay</label>
-        <div class="row">
-            <button class="btn-on" onclick="sendCommand('RELAY_TEMP_ON')">Turn ON</button>
-            <button class="btn-off" onclick="sendCommand('RELAY_TEMP_OFF')">Turn OFF</button>
+            <div class="section">
+                <h3>1. Auto Mode Thresholds</h3>
+                <label style="color: #333; font-weight: bold;">Max Temperature (°C)</label>
+                <input type="number" id="maxTemp" placeholder="e.g. 38 (Turns ON above)">
+                <label style="color: #333; font-weight: bold;">Min Humidity (%)</label>
+                <input type="number" id="maxHum" placeholder="e.g. 40 (Turns ON below)">
+                <label style="color: #333; font-weight: bold;">Min Soil Moisture (%)</label>
+                <input type="number" id="minSoil" placeholder="e.g. 45 (Turns ON below)">
+                <button class="btn-save" onclick="updateThresholds()">Save Rules to Cloud</button>
+            </div>
+
+            <div class="section">
+                <h3>2. Mode & Manual Control</h3>
+                
+                <!-- Custom Toggle -->
+                <div class="toggle-wrapper">
+                    <span class="toggle-label" style="color: white;">Enable AUTO Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="autoToggle" onchange="handleAutoToggle()">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <p style="text-align:center; font-size:12px; color: #444; font-weight: bold; margin-top: 10px; margin-bottom: 20px;">(Clicking any ON/OFF button below switches to MANUAL mode)</p>
+                
+                <label style="color: #333; font-weight: bold;">Temperature Relay</label>
+                <div class="row">
+                    <span class="toggle-label" style="color: #333;">Power</span>
+                    <label class="switch">
+                        <input type="checkbox" onchange="handleRelayToggle('TEMP', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <label style="color: #333; font-weight: bold;">Humidity Relay</label>
+                <div class="row">
+                    <span class="toggle-label" style="color: #333;">Power</span>
+                    <label class="switch">
+                        <input type="checkbox" onchange="handleRelayToggle('HUM', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <label style="color: #333; font-weight: bold;">Soil Moisture Relay</label>
+                <div class="row">
+                    <span class="toggle-label" style="color: #333;">Power</span>
+                    <label class="switch">
+                        <input type="checkbox" onchange="handleRelayToggle('SOIL', this.checked)">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="status"></div>
         </div>
-
-        <label>Humidity Relay</label>
-        <div class="row">
-            <button class="btn-on" onclick="sendCommand('RELAY_HUM_ON')">Turn ON</button>
-            <button class="btn-off" onclick="sendCommand('RELAY_HUM_OFF')">Turn OFF</button>
-        </div>
-
-        <label>Soil Moisture Relay</label>
-        <div class="row">
-            <button class="btn-on" onclick="sendCommand('RELAY_SOIL_ON')">Turn ON</button>
-            <button class="btn-off" onclick="sendCommand('RELAY_SOIL_OFF')">Turn OFF</button>
-        </div>
-    </div>
-
-    <div id="status"></div>
-</div>
 
 <script>
-    // --- SETUP YOUR CREDENTIALS HERE ---
+    // --- SETUP CREDENTIALS ---
+    const apiKey = ""; // <-- KEEP THE QUOTES!
     const WRITE_API_KEY = 'GC9LZXTIVS2E6RMM'; 
     const TALKBACK_ID = '57191'; 
     const TALKBACK_API_KEY = 'U8R6APX5W1Y5MDLS'; 
-    
-    // NEW CREDENTIALS NEEDED FOR READING DATA
     const CHANNEL_ID = '3413105'; 
     const READ_API_KEY = '91GH30CDK7P80WZB'; 
 
     const statusDiv = document.getElementById('status');
+    const autoToggle = document.getElementById('autoToggle');
 
-    // Fetch live readings from ThingSpeak
+    // Fetch live readings
     function fetchReadings() {
         fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds/last.json?api_key=${READ_API_KEY}`)
             .then(res => res.json())
@@ -94,7 +275,6 @@
             .catch(err => console.error("Error fetching live data: ", err));
     }
 
-    // Call fetchReadings immediately, then update every 20 seconds
     fetchReadings();
     setInterval(fetchReadings, 20000);
 
@@ -103,15 +283,35 @@
         const h = document.getElementById('maxHum').value;
         const s = document.getElementById('minSoil').value;
 
-        if(!t || !h || !s) { statusDiv.style.color = 'red'; statusDiv.innerText = "Fill all thresholds!"; return; }
+        if(!t || !h || !s) { statusDiv.style.color = '#dc3545'; statusDiv.innerText = "Fill all thresholds!"; return; }
         
+        statusDiv.style.color = 'black';
         statusDiv.innerText = "Saving thresholds...";
         fetch(`https://api.thingspeak.com/update?api_key=${WRITE_API_KEY}&field5=${t}&field6=${s}&field7=${h}`)
             .then(res => res.text())
             .then(data => statusDiv.innerText = data !== "0" ? "✅ Saved!" : "❌ Wait 15s before saving again.");
     }
 
+    function handleAutoToggle() {
+        if (autoToggle.checked) {
+            sendCommand('MODE_AUTO');
+        } else {
+            statusDiv.innerText = "⚠️ Auto Mode Disabled.";
+        }
+    }
+
+    function sendManualCommand(cmd) {
+        autoToggle.checked = false;
+        sendCommand(cmd);
+    }
+
+    function handleRelayToggle(relayType, isChecked) {
+        const cmd = `RELAY_${relayType}_${isChecked ? 'ON' : 'OFF'}`;
+        sendManualCommand(cmd);
+    }
+
     function sendCommand(cmd) {
+        statusDiv.style.color = 'black';
         statusDiv.innerText = "Sending command...";
         fetch(`https://api.thingspeak.com/talkbacks/${TALKBACK_ID}/commands.json`, {
             method: 'POST',
@@ -120,9 +320,56 @@
         })
         .then(res => res.json())
         .then(data => statusDiv.innerText = `✅ Command Sent: ${cmd}`)
-        .catch(err => statusDiv.innerText = "❌ Failed to send command.");
+        .catch(err => {
+            statusDiv.style.color = '#dc3545';
+            statusDiv.innerText = "❌ Failed to send command.";
+        });
+    }
+
+    // --- GEMINI AI ASSISTANT LOGIC ---
+    async function getAIAdvice() {
+        const temp = document.getElementById('valTemp').innerText;
+        const hum = document.getElementById('valHum').innerText;
+        const soil = document.getElementById('valSoil').innerText;
+        const outputDiv = document.getElementById('aiOutput');
+        
+        // 1. Check if API key is missing
+        if (!apiKey || apiKey === "PASTE_YOUR_API_KEY_HERE" || apiKey === "") {
+            outputDiv.style.display = 'block';
+            outputDiv.innerHTML = `<span style="color:#dc3545">❌ Error: API Key is missing! Please paste it into the code.</span>`;
+            return;
+        }
+
+        outputDiv.style.display = 'block';
+        outputDiv.innerHTML = '<div style="text-align:center; color: #666;"><div class="spinner"></div><br>Analyzing sensor data...</div>';
+
+        const prompt = `You are an expert agronomist. My smart farm sensors currently read: Temperature: ${temp}, Humidity: ${hum}, Soil Moisture: ${soil}. Provide a short, 2-sentence actionable piece of advice on what I should do right now regarding irrigation, ventilation, or general crop care based on these specific readings.`;
+
+        try {
+            // 2. Using the stable 1.5-flash model
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: prompt }] }],
+                    systemInstruction: { parts: [{ text: "You are a helpful, concise AI farm assistant." }] }
+                })
+            });
+
+            // 3. Catch specific API errors (like invalid keys)
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error.message || "Unknown API Error");
+            }
+
+            const result = await response.json();
+            const text = result.candidates?.[0]?.content?.parts?.[0]?.text || "No advice generated.";
+            outputDiv.innerHTML = `<strong>✨ Expert Tip:</strong><br>${text.replace(/\n/g, '<br>')}`;
+            
+        } catch (error) {
+            console.error("AI Error:", error);
+            // 4. Display the exact error on the screen
+            outputDiv.innerHTML = `<span style="color:#dc3545">❌ Failed: ${error.message}</span>`;
+        }
     }
 </script>
-
-</body>
-</html>
