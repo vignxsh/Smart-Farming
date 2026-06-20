@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farm Control Panel</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .dashboard { background: white; padding: 20px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2, h3 { text-align: center; color: #333; }
+        .section { margin-bottom: 20px; padding: 15px; background: #f9f9f9; border-radius: 8px; border: 1px solid #ddd; }
+        input { width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; margin-bottom: 5px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #27ae60; color: white; }
+        .btn-auto { background: #8e44ad; color: white; }
+        .btn-on { background: #e74c3c; color: white; width: 48%; }
+        .btn-off { background: #7f8c8d; color: white; width: 48%; }
+        .row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        #status { text-align: center; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <h2>🌾 Farm Control Panel</h2>
+
+    <!-- THRESHOLD CONTROLS -->
+    <div class="section">
+        <h3>1. Auto Mode Thresholds</h3>
+        <label>Max Temperature (°C)</label>
+        <input type="number" id="maxTemp" placeholder="e.g. 38 (Turns ON above)">
+        <label>Max Humidity (%)</label>
+        <input type="number" id="maxHum" placeholder="e.g. 45 (Turns ON below)">
+        <label>Min Soil Moisture (%)</label>
+        <input type="number" id="minSoil" placeholder="e.g. 50 (Turns ON below)">
+        <button class="btn-save" onclick="updateThresholds()">Save Rules to Cloud</button>
+    </div>
+
+    <!-- MANUAL CONTROLS -->
+    <div class="section">
+        <h3>2. Mode & Manual Control</h3>
+        <button class="btn-auto" onclick="sendCommand('MODE_AUTO')">🔄 Enable AUTO Mode</button>
+        <p style="text-align:center; font-size:12px;">(Clicking any ON/OFF button below switches to MANUAL mode)</p>
+        
+        <label>Temperature Relay</label>
+        <div class="row">
+            <button class="btn-on" onclick="sendCommand('RELAY_TEMP_ON')">Turn ON</button>
+            <button class="btn-off" onclick="sendCommand('RELAY_TEMP_OFF')">Turn OFF</button>
+        </div>
+
+        <label>Humidity Relay</label>
+        <div class="row">
+            <button class="btn-on" onclick="sendCommand('RELAY_HUM_ON')">Turn ON</button>
+            <button class="btn-off" onclick="sendCommand('RELAY_HUM_OFF')">Turn OFF</button>
+        </div>
+
+        <label>Soil Moisture Relay</label>
+        <div class="row">
+            <button class="btn-on" onclick="sendCommand('RELAY_SOIL_ON')">Turn ON</button>
+            <button class="btn-off" onclick="sendCommand('RELAY_SOIL_OFF')">Turn OFF</button>
+        </div>
+    </div>
+
+    <div id="status"></div>
+</div>
+
+<script>
+    // --- SETUP YOUR CREDENTIALS HERE ---
+    const WRITE_API_KEY = 'GC9LZXTIVS2E6RMM'; 
+    const TALKBACK_ID = '57191'; 
+    const TALKBACK_API_KEY = 'U8R6APX5W1Y5MDLS'; 
+
+    const statusDiv = document.getElementById('status');
+
+    function updateThresholds() {
+        const t = document.getElementById('maxTemp').value;
+        const h = document.getElementById('maxHum').value;
+        const s = document.getElementById('minSoil').value;
+
+        if(!t || !h || !s) { statusDiv.style.color = 'red'; statusDiv.innerText = "Fill all thresholds!"; return; }
+        
+        statusDiv.innerText = "Saving thresholds...";
+        fetch(`https://api.thingspeak.com/update?api_key=${WRITE_API_KEY}&field5=${t}&field6=${s}&field7=${h}`)
+            .then(res => res.text())
+            .then(data => statusDiv.innerText = data !== "0" ? "✅ Saved!" : "❌ Wait 15s before saving again.");
+    }
+
+    function sendCommand(cmd) {
+        statusDiv.innerText = "Sending command...";
+        fetch(`https://api.thingspeak.com/talkbacks/${TALKBACK_ID}/commands.json`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `api_key=${TALKBACK_API_KEY}&command_string=${cmd}`
+        })
+        .then(res => res.json())
+        .then(data => statusDiv.innerText = `✅ Command Sent: ${cmd}`)
+        .catch(err => statusDiv.innerText = "❌ Failed to send command.");
+    }
+</script>
+
+</body>
+</html>
