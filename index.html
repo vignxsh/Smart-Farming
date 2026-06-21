@@ -46,15 +46,16 @@
             font-style: normal; 
             font-size: 1.8em; 
             margin-bottom: 15px; 
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Dark shadow to pop */
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8); /* Dark shadow to pop */
         }
         .sarcastic-header p { 
             line-height: 1.6; 
             margin-bottom: 10px; 
             font-size: 1.15em;
             color: white; /* White text */
+
             font-weight: 600; 
-            text-shadow: 2px 2px 5px red; /* Black shadow */
+            text-shadow: 2px 2px 5px red; /* Green shadow */
         }
 
         /* Top Right Logo & Text */
@@ -82,6 +83,43 @@
             font-weight: bold;
             margin-top: 8px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+        }
+        /* LED Indicator Styles */
+        .led-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 15px 0;
+            background: rgba(248, 249, 250, 0.5);
+            border-radius: 10px;
+            border: 1px solid rgba(233, 236, 239, 0.5);
+            margin-bottom: 20px;
+        }
+        .led-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .led {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: black; /* Default OFF color */
+            transition: all 0.3s ease;
+            border: 2px solid #333;
+        }
+        /* The Glowing Red ON State */
+        .led.on {
+            background-color: #ff2a2a;
+            border-color: #ff2a2a;
+            box-shadow: 0 0 15px #ff2a2a, inset 0 0 5px rgba(255,255,255,0.5);
+        }
+        .led-box span {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            text-shadow: none;
         }
 
         /* Dashboard Container Styles */
@@ -187,6 +225,20 @@
                 <div class="row"><span style="color: #333;">Humidity:</span> <span id="valHum">--</span></div>
                 <div class="row"><span style="color: #333;">Soil Moisture:</span> <span id="valSoil">--</span></div>
             </div>
+    <div class="led-container">
+                <div class="led-box">
+                    <div id="ledTemp" class="led"></div>
+                    <span>AC</span>
+                </div>
+                <div class="led-box">
+                    <div id="ledHum" class="led"></div>
+                    <span>Sprinkler</span>
+                </div>
+                <div class="led-box">
+                    <div id="ledSoil" class="led"></div>
+                    <span>Water Pump</span>
+                </div>
+    </div>
 
             <!-- AI ASSISTANT SECTION -->
             <div class="section ai-section">
@@ -246,7 +298,7 @@
                         <span class="slider"></span>
                     </label>
                 </div>
-                <button class="btn-off" onclick="clearTalkBack()" style="width: 100%; margin-top: 15px;">🗑️ Clear Command Queue</button>
+                <button class="btn-off" onclick="clearTalkBack()" style="width: 100%; margin-top: 15px;">🗑️ Clear Command Queue</button> 
             </div>
 
             <div id="status"></div>
@@ -269,9 +321,26 @@
         fetch(`https://api.thingspeak.com/channels/${CHANNEL_ID}/feeds/last.json?api_key=${READ_API_KEY}`)
             .then(res => res.json())
             .then(data => {
+                // Update text readings
                 document.getElementById('valTemp').innerText = (data.field1 || "--") + " °C";
                 document.getElementById('valHum').innerText = (data.field2 || "--") + " %";
                 document.getElementById('valSoil').innerText = (data.field3 || "--") + " %";
+                
+                // Helper function to toggle LED colors
+                function updateLED(elementId, fieldValue) {
+                    const ledElement = document.getElementById(elementId);
+                    // If ESP32 sends "1", add the "on" class (red). Otherwise, remove it (black).
+                    if (fieldValue === "1") {
+                        ledElement.classList.add('on');
+                    } else {
+                        ledElement.classList.remove('on');
+                    }
+                }
+
+                // Update the LEDs based on fields 4, 5, and 6
+                if (data.field4 !== undefined) updateLED('ledTemp', data.field4);
+                if (data.field5 !== undefined) updateLED('ledHum', data.field5);
+                if (data.field6 !== undefined) updateLED('ledSoil', data.field6);
             })
             .catch(err => console.error("Error fetching live data: ", err));
     }
@@ -292,6 +361,7 @@
             .then(res => res.text())
             .then(data => statusDiv.innerText = data !== "0" ? "✅ Saved!" : "❌ Wait 15s before saving again.");
     }
+    
 
     function handleAutoToggle() {
         if (autoToggle.checked) {
@@ -326,6 +396,7 @@
             statusDiv.innerText = "❌ Failed to send command.";
         });
     }
+    
     function clearTalkBack() {
     statusDiv.style.color = 'black';
     statusDiv.innerText = "Clearing queue...";
@@ -341,8 +412,7 @@
         statusDiv.style.color = '#dc3545';
         statusDiv.innerText = "❌ Failed to clear queue.";
     });
-    }
-
+    } 
     // --- GEMINI AI ASSISTANT LOGIC ---
     async function getAIAdvice() {
         const temp = document.getElementById('valTemp').innerText;
@@ -353,7 +423,7 @@
         // 1. Check if API key is missing
         if (!apiKey || apiKey === "PASTE_YOUR_API_KEY_HERE" || apiKey === "") {
             outputDiv.style.display = 'block';
-            outputDiv.innerHTML = `<span style="color:#dc3545">❌ Looking For Something!!.</span>`;
+            outputDiv.innerHTML = `<span style="color:#dc3545">❌ Error: API Key is missing! Please paste it into the code.</span>`;
             return;
         }
 
