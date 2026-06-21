@@ -246,6 +246,7 @@
                         <span class="slider"></span>
                     </label>
                 </div>
+                <button class="btn-off" onclick="clearTalkBack()" style="width: 100%; margin-top: 15px;">🗑️ Clear Command Queue</button>
             </div>
 
             <div id="status"></div>
@@ -324,6 +325,22 @@
             statusDiv.style.color = '#dc3545';
             statusDiv.innerText = "❌ Failed to send command.";
         });
+    }
+    function clearTalkBack() {
+    statusDiv.style.color = 'black';
+    statusDiv.innerText = "Clearing queue...";
+    
+    fetch(`https://api.thingspeak.com/talkbacks/${TALKBACK_ID}/commands.json?api_key=${TALKBACK_API_KEY}`, {
+        method: 'DELETE'
+    })
+    .then(res => {
+        if(res.ok) statusDiv.innerText = "✅ Queue Cleared!";
+        else throw new Error('Network response was not ok');
+    })
+    .catch(err => {
+        statusDiv.style.color = '#dc3545';
+        statusDiv.innerText = "❌ Failed to clear queue.";
+    });
     }
 
     // --- GEMINI AI ASSISTANT LOGIC ---
